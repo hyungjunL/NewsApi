@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace는 위에서 만든 Mapper 인터페이스의 전체 경로와 일치해야 합니다. -->
+<mapper namespace="com.ddi.newsapi.repository.UserMapper">
+
+    <!-- id는 인터페이스의 메소드 이름과 일치해야 합니다. -->
+    <!-- resultType은 쿼리 결과를 담을 객체의 타입(별칭 또는 전체 경로)입니다. -->
+    <select id="findByUsername" resultType="com.ddi.newsapi.model.User">
+        SELECT * FROM users WHERE username = #{username}
+    </select>
+
+    <select id="findByEmail" resultType="com.ddi.newsapi.model.User">
+        SELECT * FROM users WHERE email = #{email}
+    </select>
+
+    <!-- useGeneratedKeys와 keyProperty를 사용하면 INSERT 후 자동 생성된 ID를 user 객체에 담아줍니다. -->
+    <insert id="save">
+        INSERT INTO users (username, email, password, name, role, provider, provider_id)
+        VALUES (#{username}, #{email}, #{password}, #{name}, #{role}, #{provider}, #{providerId})
+    </insert>
+
+    <update id="update">
+        UPDATE users
+        SET
+            name = #{name}
+        WHERE
+            id = #{id}
+    </update>
+
+    <select id="findByProviderAndProviderId" parameterType="map" resultType="com.ddi.newsapi.model.User">
+        SELECT id, username, email, password, name, role, provider, provider_id
+        FROM users
+        WHERE provider = #{provider} AND provider_id = #{providerId}
+    </select>
+
+
+</mapper>

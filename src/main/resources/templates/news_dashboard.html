@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>뉴스 대시보드</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        .dashboard { max-width: 800px; margin: auto; }
+        .article { border: 1px solid #ccc; border-radius: 8px; padding: 1em; margin-bottom: 1em; }
+        .article h3 { margin-top: 0; }
+        .article a { text-decoration: none; color: #0056b3; }
+        .article p { color: #555; }
+        .article .meta { font-size: 0.8em; color: #888; }
+        .no-articles { text-align: center; padding: 2em; border: 1px dashed #ccc; border-radius: 8px; }
+
+        /* --- [추가] 페이징을 위한 CSS --- */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2em;
+        }
+        .pagination a, .pagination span {
+            color: #007bff;
+            padding: 8px 16px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            margin: 0 4px;
+            border-radius: 4px;
+        }
+        .pagination a:hover {
+            background-color: #f0f0f0;
+        }
+        .pagination .active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .pagination .disabled {
+            color: #ccc;
+            pointer-events: none;
+            border-color: #ddd;
+        }
+        /* [신규] 로그아웃 폼을 우측 상단에 배치하기 위한 컨테이너 */
+        .logout-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        /* [신규] 로그아웃 버튼 스타일 */
+        .logout-button {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+            background-color: #dc3545; /* 로그아웃을 의미하는 붉은 계열 색상 */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .logout-button:hover {
+            background-color: #c82333; /* 호버 시 더 진한 색상 */
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <h1>나의 맞춤 뉴스</h1>
+    <!-- [신규] 로그아웃 버튼을 위한 폼 -->
+    <!-- Spring Security의 로그아웃은 POST 방식으로 호출하는 것이 보안상 안전합니다. -->
+    <div class="logout-container">
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="logout-button">로그아웃</button>
+        </form>
+    </div>
+
+    <!-- 뉴스 목록 출력 부분 (기존과 동일) -->
+    <div th:if="${!articles.isEmpty()}">
+        <div th:each="article : ${articles}" class="article">
+            <h3>
+                <a th:href="${article.link}" th:text="${article.title}" target="_blank">기사 제목</a>
+            </h3>
+            <p th:text="${article.summary}">기사 요약...</p>
+            <div class="meta">
+                <span th:text="${article.source}">출처</span> |
+                <span th:text="${article.pubDate}">발행일</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 설정 필요 안내 메시지 (기존과 동일) -->
+    <div th:if="${articles.isEmpty()}" class="no-articles">
+        <p>표시할 뉴스가 없습니다.</p>
+        <p th:if="${needsSetup}">
+            <a th:href="@{/api/news/settings-form}">뉴스 설정</a>으로 이동하여 관심 사이트와 키워드를 등록해주세요.
+        </p>
+    </div>
+
+    <!-- ================================================== -->
+    <!--           [수정] 페이징 컨트롤 부분                  -->
+    <!-- ================================================== -->
+    <nav th:if="${totalPages > 1}" class="pagination" aria-label="Page navigation">
+        <!-- '이전' 버튼 (기존과 동일) -->
+        <a th:href="${currentPage > 1} ? @{/news/home(page=${currentPage - 1})} : '#'"
+           th:classappend="${currentPage == 1} ? 'disabled' : ''">
+            &laquo; 이전
+        </a>
+
+        <!-- [수정] 페이지 번호 목록 -->
+        <!-- #numbers.sequence(1, totalPages) 대신, 계산된 startPage와 endPage를 사용합니다. -->
+        <th:block th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}">
+            <a th:href="@{/news/home(page=${pageNumber})}"
+               th:text="${pageNumber}"
+               th:classappend="${pageNumber == currentPage} ? 'active' : ''">
+            </a>
+        </th:block>
+
+        <!-- '다음' 버튼 (기존과 동일) -->
+        <a th:href="${currentPage < totalPages} ? @{/news/home(page=${currentPage + 1})} : '#'"
+           th:classappend="${currentPage == totalPages} ? 'disabled' : ''">
+            다음 &raquo;
+        </a>
+    </nav>
+
+</div>
+</body>
+</html>

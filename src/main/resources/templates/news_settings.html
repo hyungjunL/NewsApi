@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>뉴스 설정</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f2f5; margin: 0; padding: 2rem 0; }
+        .settings-container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h1 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: #555; }
+        input[type="text"] { width: 100%; padding: 0.75rem; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+        button { width: 100%; padding: 0.75rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background-color 0.2s; }
+        button:hover { background-color: #0056b3; }
+        .checkbox-group label { font-weight: normal; display: inline-block; margin-left: 0.5rem; }
+        .checkbox-group div { margin-bottom: 0.5rem; }
+        .home-link { display: block; text-align: center; margin-top: 1rem; }
+
+        /* [신규] 동적 키워드 입력을 위한 스타일 */
+        .keyword-input-row { display: flex; align-items: center; margin-bottom: 0.5rem; }
+        .keyword-input-row input { flex-grow: 1; margin-right: 0.5rem; }
+        .keyword-input-row .remove-btn { width: auto; padding: 0.5rem 0.75rem; background-color: #dc3545; font-size: 0.9rem; flex-shrink: 0; }
+        .add-btn { width: auto; padding: 0.5rem 1rem; background-color: #28a745; font-size: 0.9rem; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+<div class="settings-container">
+    <h1>뉴스 설정</h1>
+    <form th:action="@{/api/news/settings-form}" method="post">
+
+        <!-- 뉴스 사이트 입력 (기존과 동일) -->
+        <div class="form-group">
+            <label>뉴스 사이트 (중복 선택 가능)</label>
+            <div class="checkbox-group">
+                <div>
+                    <input type="checkbox" id="site-google" name="sites" value="Google" th:checked="${#lists.contains(currentSettings.sites, 'Google')}">
+                    <label for="site-google">Google</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="site-naver" name="sites" value="Naver" th:checked="${#lists.contains(currentSettings.sites, 'Naver')}">
+                    <label for="site-naver">Naver</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- [수정] 키워드 입력: textarea -> 동적 input 리스트 -->
+        <div class="form-group">
+            <label>키워드</label>
+            <div id="keyword-inputs-container">
+                <!-- Thymeleaf로 기존에 저장된 키워드들을 input 필드로 렌더링 -->
+                <div th:each="keyword : ${currentSettings.keywords}" class="keyword-input-row">
+                    <input type="text" name="keywords" placeholder="키워드 입력" th:value="${keyword}" required>
+                    <button type="button" class="remove-btn">삭제</button>
+                </div>
+            </div>
+            <button type="button" id="add-keyword-btn" class="add-btn">키워드 추가</button>
+        </div>
+
+        <button type="submit">설정 저장</button>
+    </form>
+    <a th:href="@{/news/home}" class="home-link">대시보드로 돌아가기</a>
+</div>
+
+<!-- [신규] 동적 폼 처리를 위한 JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const container = document.getElementById('keyword-inputs-container');
+        const addButton = document.getElementById('add-keyword-btn');
+
+        // '키워드 추가' 버튼 클릭 이벤트
+        addButton.addEventListener('click', function () {
+            addKeywordInput();
+        });
+
+        // '삭제' 버튼 클릭 이벤트 (이벤트 위임 사용)
+        container.addEventListener('click', function (event) {
+            // 클릭된 요소가 '삭제' 버튼일 경우에만 동작
+            if (event.target.classList.contains('remove-btn')) {
+                // 버튼의 부모 요소(div.keyword-input-row)를 삭제
+                event.target.parentElement.remove();
+            }
+        });
+
+        // 새로운 키워드 입력 필드를 생성하고 컨테이너에 추가하는 함수
+        function addKeywordInput() {
+            const newRow = document.createElement('div');
+            newRow.className = 'keyword-input-row';
+
+            const newInput = document.createElement('input');
+            newInput.type = 'text';
+            newInput.name = 'keywords'; // ★ 모든 input의 name을 동일하게 설정
+            newInput.placeholder = '키워드 입력';
+            newInput.required = true;
+
+            const newRemoveButton = document.createElement('button');
+            newRemoveButton.type = 'button'; // form 제출 방지
+            newRemoveButton.className = 'remove-btn';
+            newRemoveButton.textContent = '삭제';
+
+            newRow.appendChild(newInput);
+            newRow.appendChild(newRemoveButton);
+
+            container.appendChild(newRow);
+        }
+    });
+</script>
+
+</body>
+</html>

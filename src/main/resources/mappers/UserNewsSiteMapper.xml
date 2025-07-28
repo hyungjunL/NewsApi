@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ddi.newsapi.repository.UserNewsSiteMapper">
+
+    <select id="findByUserUsername" resultType="com.ddi.newsapi.model.UserNewsSite">
+        SELECT id, username, site_url
+        FROM user_news_sites
+        WHERE username = #{username}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_news_sites (username, site_url)
+        VALUES (#{username}, #{siteUrl})
+    </insert>
+
+    <delete id="deleteByUserUsername">
+        DELETE FROM user_news_sites
+        WHERE username = #{username}
+    </delete>
+
+    <delete id="deleteByUserUsernameAndSiteUrl">
+        DELETE FROM user_news_sites
+        WHERE username = #{username} AND site_url = #{siteUrl}
+    </delete>
+
+</mapper>

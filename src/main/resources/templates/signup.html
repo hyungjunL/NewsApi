@@ -1,0 +1,167 @@
+<!-- src/main/resources/templates/signup.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>회원가입</title>
+  <style>
+    /* 전체 페이지 레이아웃 */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh; /* 스크롤이 생겨도 중앙 정렬 유지 */
+      background-color: #f0f2f5;
+      margin: 0;
+    }
+
+    /* 회원가입 폼 컨테이너 */
+    .signup-container {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px; /* 모바일 화면에서도 보기 좋게 설정 */
+      box-sizing: border-box;
+    }
+
+    /* 제목 (h1) */
+    .signup-container h1 {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      font-size: 1.75rem;
+      text-align: center;
+      color: #333;
+    }
+
+    /* 입력 필드 그룹 */
+    .form-group {
+      margin-bottom: 1.25rem;
+      text-align: left; /* 라벨을 왼쪽 정렬 */
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #555;
+    }
+
+    /* 입력창 (input) */
+    #signup-form input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s; /* 부드러운 전환 효과 */
+    }
+
+    /* 입력창 포커스 시 효과 */
+    #signup-form input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    }
+
+    /* 가입하기 버튼 */
+    #signup-form button {
+      width: 100%;
+      padding: 0.85rem;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    #signup-form button:hover {
+      background-color: #0056b3;
+    }
+
+    /* 로그인 페이지 이동 링크 */
+    .login-link {
+      display: block;
+      margin-top: 1.5rem;
+      text-align: center;
+      color: #007bff;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .login-link:hover {
+      text-decoration: underline;
+      color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+<div class="signup-container">
+  <h1>회원가입</h1>
+  <!-- form에 id를 부여하고, action과 method는 그대로 둡니다. -->
+  <form id="signup-form" th:action="@{/signup-proc}" method="post">
+    <div class="form-group">
+      <label for="username">사용자 아이디</label>
+      <input type="text" id="username" name="username" required>
+    </div>
+    <div class="form-group">
+      <label for="password">비밀번호</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+    <div class="form-group">
+      <label for="email">이메일</label>
+      <input type="email" id="email" name="email" required>
+    </div>
+    <button type="submit">가입하기</button>
+  </form>
+  <a th:href="@{/login}" class="login-link">이미 계정이 있으신가요? 로그인</a>
+</div>
+
+<!-- [신규] 비동기 폼 제출 및 결과 처리를 위한 JavaScript -->
+<script>
+  document.getElementById('signup-form').addEventListener('submit', async function (event) {
+    // 1. 폼의 기본 제출 동작(페이지 새로고침)을 막습니다.
+    event.preventDefault();
+
+    const form = event.target;
+    const formData = new FormData(form);
+    // 폼 데이터를 JSON 객체로 변환합니다.
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      // 2. fetch API를 사용하여 서버에 비동기 POST 요청을 보냅니다.
+      const response = await fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      // 서버가 보낸 응답 본문을 JSON으로 파싱합니다.
+      const result = await response.json();
+
+      // 3. 서버의 응답 상태 코드에 따라 다른 동작을 수행합니다.
+      if (response.ok) { // HTTP 상태 코드가 200-299 사이일 경우 (성공)
+        alert(result.message); // "회원가입이 성공적으로 완료되었습니다."
+        window.location.href = '/login'; // 로그인 페이지로 이동
+      } else { // 그 외의 경우 (실패)
+        // 팝업으로 에러 메시지를 보여줍니다. (예: "이미 존재하는 아이디입니다.")
+        alert('회원가입 실패: ' + result.message);
+      }
+    } catch (error) {
+      // 네트워크 연결 실패 등 fetch 요청 자체가 실패한 경우
+      console.error('Error during signup:', error);
+      alert('서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.');
+    }
+  });
+</script>
+
+</body>
+</html>
