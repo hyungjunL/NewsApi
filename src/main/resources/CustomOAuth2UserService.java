@@ -24,6 +24,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+    //이건 redis
 
     private final UserMapper userMapper;
 
